@@ -1,16 +1,28 @@
 #include <stdio.h>
+#include <math.h>
 
+#include <string.h>
 int main(){
 
-    int age = 2;
-    int year = 2074;
-    int quantity = 7;
-    int amount = 4; 
-    printf("Amir is %d years old \n", age);
-    printf("Amir was born in %d\n", year);
-    printf("His dad bought him %d bananas\n", quantity);
-    printf("Amir ate %d bananas\n", amount);
+    float x = 3;
 
-    return 0;
+   // x = sqrt(x);
+
+   // x = pow(x, 2);
+
+  // x = round(x);
+
+   //  x = ceil(x);
+       
+     //  x = floor(x);
+
+     //  x = abs(x);
+
+         x = log(x);
+        
+    printf("%f", x);
+
+
+return 0;
+
 }
-

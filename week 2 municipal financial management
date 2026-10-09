@@ -1,0 +1,69 @@
+#include <stdio.h>
+
+int main()
+{
+double revenue;
+double expenses;
+double balance;
+int departments;
+double payroll;
+double procurement;
+double assets;
+
+printf("========================================\n");
+printf("       MUNICIPAL BUDGET CALCULATOR\n");
+printf("========================================\n");
+
+/* Enter revenue and expenses */
+printf("Enter Total Revenue: ");
+scanf("%lf", &revenue);
+
+printf("Enter Total Expenses: ");
+scanf("%lf", &expenses);
+
+/* Calculate balance */
+balance = revenue - expenses;
+
+/* Display budget report */
+printf("\n========================================\n");
+printf("          MUNICIPAL BUDGET REPORT\n");
+printf("========================================\n");
+
+printf("Revenue:  %.2f\n", revenue);
+printf("Expenses: %.2f\n", expenses);
+printf("Balance:  %.2f\n", balance);
+
+printf("========================================\n\n");
+
+/* Extension Exercise */
+printf("Enter Number of Departments: ");
+scanf("%d", &departments);
+
+printf("Enter Total Payroll: ");
+scanf("%lf", &payroll);
+
+printf("Enter Total Procurement: ");
+scanf("%lf", &procurement);
+
+printf("Enter Total Assets Value: ");
+scanf("%lf", &assets);
+
+/* Display municipal financial summary */
+printf("\n========================================\n");
+printf("     MUNICIPAL FINANCIAL SUMMARY\n");
+printf("========================================\n");
+
+printf("Total Revenue:       %.2f\n", revenue);
+printf("Total Expenses:      %.2f\n", expenses);
+printf("Budget Balance:      %.2f\n", balance);
+printf("Departments:         %d\n", departments);
+printf("Total Payroll:       %.2f\n", payroll);
+printf("Total Procurement:   %.2f\n", procurement);
+printf("Total Assets Value:  %.2f\n", assets);
+
+
+
+return 0;
+
+
+}

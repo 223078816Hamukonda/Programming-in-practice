@@ -1,0 +1,454 @@
+/*
+ * Municipal Information Management System
+ * Week 6 Practical Lab
+ *
+ * A. Employee salaries     (float salaries[50])
+ * B. Department budgets    (float budgets[10])
+ * C. Vehicle registrations (char registrations[20][20])
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define NUM_SALARIES 50
+#define NUM_BUDGETS  10
+#define NUM_REGS     20
+#define REG_LEN      20
+
+/* ---------- Input helpers ---------- */
+
+void clearInput(void)
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+}
+
+/* Reads a non-negative number; keeps asking until the input is valid. */
+float readFloat(const char *prompt)
+{
+    float value;
+    int result;
+
+    while (1)
+    {
+        printf("%s", prompt);
+        result = scanf("%f", &value);
+
+        if (result == EOF)
+        {
+            printf("\nInput ended. Exiting.\n");
+            exit(1);
+        }
+        if (result == 1 && value >= 0)
+        {
+            clearInput();
+            return value;
+        }
+        printf("Invalid input. Enter a number that is 0 or more.\n");
+        clearInput();
+    }
+}
+
+int readInt(const char *prompt)
+{
+    int value;
+    int result;
+
+    while (1)
+    {
+        printf("%s", prompt);
+        result = scanf("%d", &value);
+
+        if (result == EOF)
+        {
+            printf("\nInput ended. Exiting.\n");
+            exit(1);
+        }
+        if (result == 1)
+        {
+            clearInput();
+            return value;
+        }
+        printf("Invalid input. Enter a whole number.\n");
+        clearInput();
+    }
+}
+
+/* Reads a line of text (spaces allowed), converts to upper case. */
+void readText(const char *prompt, char *buffer, int size)
+{
+    int i;
+
+    while (1)
+    {
+        printf("%s", prompt);
+        if (fgets(buffer, size, stdin) == NULL)
+        {
+            printf("\nInput ended. Exiting.\n");
+            exit(1);
+        }
+
+        /* Remove trailing newline, or discard the rest of an over-long line */
+        if (strchr(buffer, '\n') != NULL)
+            buffer[strcspn(buffer, "\n")] = '\0';
+        else
+            clearInput();
+
+        for (i = 0; buffer[i] != '\0'; i++)
+            buffer[i] = (char)toupper((unsigned char)buffer[i]);
+
+        if (buffer[0] != '\0')
+            return;
+
+        printf("Input cannot be empty.\n");
+    }
+}
+
+/* ---------- A. Employee salaries ---------- */
+
+void captureSalaries(float salaries[], int n)
+{
+    int i;
+    for (i = 0; i < n; i++)
+    {
+        char prompt[50];
+        sprintf(prompt, "Enter salary for employee %d: ", i + 1);
+        salaries[i] = readFloat(prompt);
+    }
+}
+
+void displaySalaries(const float salaries[], int n)
+{
+    int i;
+    printf("\n--- Employee Salaries ---\n");
+    for (i = 0; i < n; i++)
+        printf("Employee %2d: %10.2f\n", i + 1, salaries[i]);
+}
+
+float calcTotal(const float values[], int n)
+{
+    float total = 0;
+    int i;
+    for (i = 0; i < n; i++)
+        total += values[i];
+    return total;
+}
+
+float calcAverage(const float values[], int n)
+{
+    return calcTotal(values, n) / n;
+}
+
+/* Returns the index of the highest value */
+int findHighest(const float values[], int n)
+{
+    int i, best = 0;
+    for (i = 1; i < n; i++)
+        if (values[i] > values[best])
+            best = i;
+    return best;
+}
+
+/* Returns the index of the lowest value */
+int findLowest(const float values[], int n)
+{
+    int i, best = 0;
+    for (i = 1; i < n; i++)
+        if (values[i] < values[best])
+            best = i;
+    return best;
+}
+
+void searchSalary(const float salaries[], int n)
+{
+    float target = readFloat("Enter the salary to search for: ");
+    int i, found = 0;
+
+    for (i = 0; i < n; i++)
+    {
+        /* Compare to the nearest cent to avoid float rounding problems */
+        float diff = salaries[i] - target;
+        if (diff < 0)
+            diff = -diff;
+
+        if (diff < 0.005f)
+        {
+            printf("Found %.2f for employee %d.\n", salaries[i], i + 1);
+            found = 1;
+        }
+    }
+    if (!found)
+        printf("Salary %.2f was not found.\n", target);
+}
+
+void salaryMenu(float salaries[], int *captured)
+{
+    int choice;
+    int idx;
+
+    do
+    {
+        printf("\n===== A. EMPLOYEE SALARIES =====\n");
+        printf("1. Capture 50 salaries\n");
+        printf("2. Display all salaries\n");
+        printf("3. Calculate average salary\n");
+        printf("4. Find highest salary\n");
+        printf("5. Find lowest salary\n");
+        printf("6. Search for a salary\n");
+        printf("0. Back to main menu\n");
+        choice = readInt("Choice: ");
+
+        if (choice >= 2 && choice <= 6 && !*captured)
+        {
+            printf("Please capture the salaries first (option 1).\n");
+            continue;
+        }
+
+        switch (choice)
+        {
+        case 1:
+            captureSalaries(salaries, NUM_SALARIES);
+            *captured = 1;
+            break;
+        case 2:
+            displaySalaries(salaries, NUM_SALARIES);
+            break;
+        case 3:
+            printf("Average salary: %.2f\n", calcAverage(salaries, NUM_SALARIES));
+            break;
+        case 4:
+            idx = findHighest(salaries, NUM_SALARIES);
+            printf("Highest salary: %.2f (employee %d)\n", salaries[idx], idx + 1);
+            break;
+        case 5:
+            idx = findLowest(salaries, NUM_SALARIES);
+            printf("Lowest salary: %.2f (employee %d)\n", salaries[idx], idx + 1);
+            break;
+        case 6:
+            searchSalary(salaries, NUM_SALARIES);
+            break;
+        case 0:
+            break;
+        default:
+            printf("Invalid choice.\n");
+        }
+    } while (choice != 0);
+}
+
+/* ---------- B. Department budgets ---------- */
+
+void captureBudgets(float budgets[], int n)
+{
+    int i;
+    for (i = 0; i < n; i++)
+    {
+        char prompt[60];
+        sprintf(prompt, "Enter budget for department %d: ", i + 1);
+        budgets[i] = readFloat(prompt);
+    }
+}
+
+void displayBudgets(const float budgets[], int n)
+{
+    int i;
+    printf("\n--- Department Budgets ---\n");
+    for (i = 0; i < n; i++)
+        printf("Department %2d: %12.2f\n", i + 1, budgets[i]);
+}
+
+/* Bubble sort, lowest to highest */
+void sortBudgets(float budgets[], int n)
+{
+    int i, j;
+    float temp;
+
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = 0; j < n - 1 - i; j++)
+        {
+            if (budgets[j] > budgets[j + 1])
+            {
+                temp = budgets[j];
+                budgets[j] = budgets[j + 1];
+                budgets[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void budgetMenu(float budgets[], int *captured)
+{
+    int choice;
+
+    do
+    {
+        printf("\n===== B. DEPARTMENT BUDGETS =====\n");
+        printf("1. Capture 10 budgets\n");
+        printf("2. Display budgets\n");
+        printf("3. Calculate total budget\n");
+        printf("4. Calculate average budget\n");
+        printf("5. Sort budgets (lowest to highest)\n");
+        printf("0. Back to main menu\n");
+        choice = readInt("Choice: ");
+
+        if (choice >= 2 && choice <= 5 && !*captured)
+        {
+            printf("Please capture the budgets first (option 1).\n");
+            continue;
+        }
+
+        switch (choice)
+        {
+        case 1:
+            captureBudgets(budgets, NUM_BUDGETS);
+            *captured = 1;
+            break;
+        case 2:
+            displayBudgets(budgets, NUM_BUDGETS);
+            break;
+        case 3:
+            printf("Total budget: %.2f\n", calcTotal(budgets, NUM_BUDGETS));
+            break;
+        case 4:
+            printf("Average budget: %.2f\n", calcAverage(budgets, NUM_BUDGETS));
+            break;
+        case 5:
+            sortBudgets(budgets, NUM_BUDGETS);
+            printf("Budgets sorted from lowest to highest.\n");
+            displayBudgets(budgets, NUM_BUDGETS);
+            break;
+        case 0:
+            break;
+        default:
+            printf("Invalid choice.\n");
+        }
+    } while (choice != 0);
+}
+
+/* ---------- C. Vehicle registration numbers ---------- */
+
+void captureRegistrations(char registrations[][REG_LEN], int n)
+{
+    int i;
+    for (i = 0; i < n; i++)
+    {
+        char prompt[60];
+        sprintf(prompt, "Enter registration number %d: ", i + 1);
+        readText(prompt, registrations[i], REG_LEN);
+    }
+}
+
+void displayRegistrations(char registrations[][REG_LEN], int n)
+{
+    int i;
+    printf("\n--- Vehicle Registration Numbers ---\n");
+    for (i = 0; i < n; i++)
+        printf("Vehicle %2d: %s\n", i + 1, registrations[i]);
+}
+
+void searchRegistration(char registrations[][REG_LEN], int n)
+{
+    char target[REG_LEN];
+    int i, found = 0;
+
+    readText("Enter the registration number to search for: ", target, REG_LEN);
+
+    for (i = 0; i < n; i++)
+    {
+        if (strcmp(registrations[i], target) == 0)
+        {
+            printf("Found %s at position %d.\n", registrations[i], i + 1);
+            found = 1;
+        }
+    }
+    if (!found)
+        printf("Registration number %s was not found.\n", target);
+}
+
+void registrationMenu(char registrations[][REG_LEN], int *captured)
+{
+    int choice;
+
+    do
+    {
+        printf("\n===== C. VEHICLE REGISTRATIONS =====\n");
+        printf("1. Capture 20 registration numbers\n");
+        printf("2. Display all registration numbers\n");
+        printf("3. Search for a registration number\n");
+        printf("0. Back to main menu\n");
+        choice = readInt("Choice: ");
+
+        if (choice >= 2 && choice <= 3 && !*captured)
+        {
+            printf("Please capture the registration numbers first (option 1).\n");
+            continue;
+        }
+
+        switch (choice)
+        {
+        case 1:
+            captureRegistrations(registrations, NUM_REGS);
+            *captured = 1;
+            break;
+        case 2:
+            displayRegistrations(registrations, NUM_REGS);
+            break;
+        case 3:
+            searchRegistration(registrations, NUM_REGS);
+            break;
+        case 0:
+            break;
+        default:
+            printf("Invalid choice.\n");
+        }
+    } while (choice != 0);
+}
+
+/* ---------- Main ---------- */
+
+int main(void)
+{
+    float salaries[NUM_SALARIES];
+    float budgets[NUM_BUDGETS];
+    char registrations[NUM_REGS][REG_LEN];
+
+    int salariesCaptured = 0;
+    int budgetsCaptured = 0;
+    int registrationsCaptured = 0;
+    int choice;
+
+    do
+    {
+        printf("\n=========================================\n");
+        printf("  MUNICIPAL INFORMATION MANAGEMENT SYSTEM\n");
+        printf("=========================================\n");
+        printf("1. Employee salaries\n");
+        printf("2. Department budgets\n");
+        printf("3. Vehicle registration numbers\n");
+        printf("0. Exit\n");
+        choice = readInt("Choice: ");
+
+        switch (choice)
+        {
+        case 1:
+            salaryMenu(salaries, &salariesCaptured);
+            break;
+        case 2:
+            budgetMenu(budgets, &budgetsCaptured);
+            break;
+        case 3:
+            registrationMenu(registrations, &registrationsCaptured);
+            break;
+        case 0:
+            printf("Goodbye.\n");
+            break;
+        default:
+            printf("Invalid choice.\n");
+        }
+    } while (choice != 0);
+
+    return 0;
+}

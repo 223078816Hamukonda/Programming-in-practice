@@ -1,0 +1,183 @@
+/*
+ * Lab 2: Tender Evaluation
+ *
+ * A supplier is QUALIFIED if:
+ *   1. the registration is valid,
+ *   2. all required documents were submitted, and
+ *   3. the price is within the available budget.
+ *
+ * Otherwise the supplier is DISQUALIFIED.
+ * The PREFERRED SUPPLIER is the qualified supplier with the lowest price.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_SUPPLIERS 20
+#define NAME_LEN      50
+
+void clearInput(void)
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+}
+
+/* Reads a number > 0; asks again on invalid input. */
+float readPositiveFloat(const char *prompt)
+{
+    float value;
+    int result;
+
+    while (1)
+    {
+        printf("%s", prompt);
+        result = scanf("%f", &value);
+        if (result == EOF)
+        {
+            printf("\nInput ended. Exiting.\n");
+            exit(1);
+        }
+        clearInput();
+        if (result == 1 && value > 0)
+            return value;
+        printf("Invalid input. Enter a number greater than 0.\n");
+    }
+}
+
+/* Reads 1 (Yes) or 0 (No). */
+int readYesNo(const char *prompt)
+{
+    int value;
+    int result;
+
+    while (1)
+    {
+        printf("%s", prompt);
+        result = scanf("%d", &value);
+        if (result == EOF)
+        {
+            printf("\nInput ended. Exiting.\n");
+            exit(1);
+        }
+        clearInput();
+        if (result == 1 && (value == 0 || value == 1))
+            return value;
+        printf("Invalid input. Enter 1 for Yes or 0 for No.\n");
+    }
+}
+
+int readCount(const char *prompt, int min, int max)
+{
+    int value;
+    int result;
+
+    while (1)
+    {
+        printf("%s", prompt);
+        result = scanf("%d", &value);
+        if (result == EOF)
+        {
+            printf("\nInput ended. Exiting.\n");
+            exit(1);
+        }
+        clearInput();
+        if (result == 1 && value >= min && value <= max)
+            return value;
+        printf("Invalid input. Enter a whole number from %d to %d.\n", min, max);
+    }
+}
+
+int main(void)
+{
+    char  names[MAX_SUPPLIERS][NAME_LEN];
+    float prices[MAX_SUPPLIERS];
+    int   registered[MAX_SUPPLIERS];
+    int   documentsComplete[MAX_SUPPLIERS];
+    int   qualified[MAX_SUPPLIERS];
+
+    float budget;
+    float lowestPrice = 0;
+    int   count, i;
+    int   qualifiedCount = 0;
+    int   preferredCount = 0;
+
+    printf("=== TENDER EVALUATION ===\n\n");
+
+    count  = readCount("How many suppliers submitted tenders? ", 1, MAX_SUPPLIERS);
+    budget = readPositiveFloat("Enter available budget: ");
+
+    /* Capture the details of each supplier */
+    for (i = 0; i < count; i++)
+    {
+        printf("\n--- Supplier %d ---\n", i + 1);
+
+        printf("Enter supplier name: ");
+        if (scanf("%49s", names[i]) != 1)
+        {
+            printf("\nInput ended. Exiting.\n");
+            return 1;
+        }
+        clearInput();
+
+        prices[i]            = readPositiveFloat("Enter tender price: ");
+        registered[i]        = readYesNo("Is supplier registered? (1=Yes, 0=No): ");
+        documentsComplete[i] = readYesNo("Are all documents complete? (1=Yes, 0=No): ");
+
+        /* Qualified only if ALL three conditions are true */
+        if (registered[i] == 1 && documentsComplete[i] == 1 && prices[i] <= budget)
+        {
+            qualified[i] = 1;
+            qualifiedCount++;
+
+            /* Track the lowest price among qualified suppliers */
+            if (qualifiedCount == 1 || prices[i] < lowestPrice)
+                lowestPrice = prices[i];
+        }
+        else
+        {
+            qualified[i] = 0;
+        }
+    }
+
+    /* Display the results */
+    printf("\n=========== RESULTS ===========\n");
+    printf("Budget: %.2f\n\n", budget);
+
+    for (i = 0; i < count; i++)
+    {
+        printf("Supplier: %s\n", names[i]);
+        printf("Price:    %.2f\n", prices[i]);
+
+        if (qualified[i] == 1 && prices[i] == lowestPrice)
+        {
+            printf("Status:   Preferred Supplier (qualified, lowest price)\n");
+            preferredCount++;
+        }
+        else if (qualified[i] == 1)
+        {
+            printf("Status:   Qualified\n");
+        }
+        else
+        {
+            printf("Status:   Disqualified\n");
+
+            /* Explain why */
+            if (registered[i] == 0)
+                printf("          - Registration is not valid\n");
+            if (documentsComplete[i] == 0)
+                printf("          - Required documents are incomplete\n");
+            if (prices[i] > budget)
+                printf("          - Price exceeds the budget\n");
+        }
+        printf("\n");
+    }
+
+    if (qualifiedCount == 0)
+        printf("No supplier qualified, so there is no Preferred Supplier.\n");
+    else if (preferredCount > 1)
+        printf("%d suppliers tied on the lowest price of %.2f.\n",
+               preferredCount, lowestPrice);
+
+    return 0;
+}
